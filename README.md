@@ -1,6 +1,6 @@
 # kiel-parksensors-application-mashup
 This project is an extension of the project "kiel-parksensors" and an introduction to [FIWARE Wirecloud](https://Wirecloud.rtfd.io). 
-It will be shown how the status of the parking spaces, e.g. can be visualized on a map using Wirecloud mashups and widget.
+It will be shown how the status of the parking spaces can be visualized on a map using Wirecloud mashups and widgets.
 
 The overall aim of Wirecloud is to allow someone without a programming background to be able to create data
 visualizations using a drag-and-drop interface. A wide range of existing open-source
@@ -31,5 +31,32 @@ The next step is to create a user to log in to Wirecloud:
  Password (again): ${yourpassword}
  Superuser created successfully.`
 
-Then you can follow the documentation of dd.
-https://github.com/FIWARE/tutorials.Application-Mashup/blob/master/README.md
+Now you can follow the documentation of https://github.com/FIWARE/tutorials.Application-Mashup#adding-resources-to-wirecloud
+1) Login with your user.
+2) Create new workspace.
+3) Creating Application Mashups.
+
+Settings NSGI Browser Widget
+
+    -   NGSI server URl: http://orion-v2:1026/
+    -   NGSI entity types: ParkingSpot
+    
+Settings NGSI Source Operator
+ 
+    - NGSI server URL: http://orion-v2:1026/
+    - NGSI proxy URL: https://ngsi-proxy:8100
+    - NGSI entity types: ParkingSpot
+    
+Settings NGSI Entity to POI Operator
+    
+    - Coordinates attribute: location
+    
+Settings Open Layers Map Widget
+
+    - Initial Location: 10.15,54.34
+    - Initial Zoom Level: 16
+    - Min Zoom: 4
+    - PoI Zoom: 15
+ 
+ 
+The updated mashup can be seen on the workspace tab (refresh the browser if necessary).
