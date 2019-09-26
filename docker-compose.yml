@@ -1,0 +1,233 @@
+version: '3.5'
+
+services:
+
+  wirecloud:
+    image: fiware/wirecloud:1.3.1
+    container_name: fiware-wirecloud
+    hostname: wirecloud
+    ports:
+      - "8000:8000"
+    networks:
+      default:
+        ipv4_address: 172.18.1.10
+
+    restart: always
+    depends_on:
+      - keyrock
+      - elasticsearch
+      - memcached
+      - postgres-db
+    environment:
+      - DEBUG=True
+      - DEFAULT_THEME=wirecloud.defaulttheme
+      - DB_HOST=postgres-db
+      - DB_PASSWORD=wirepass   # Change this password!
+      - FORWARDED_ALLOW_IPS=*
+      - ELASTICSEARCH2_URL=http://elasticsearch:9200/
+      - MEMCACHED_LOCATION=memcached:11211
+      - FIWARE_IDM_PUBLIC_URL=http://localhost:3005
+      - FIWARE_IDM_SERVER=http://172.18.1.164:3005
+      #- SOCIAL_AUTH_FIWARE_KEY=wirecloud-dckr-site-0000-00000000000
+      #- SOCIAL_AUTH_FIWARE_SECRET=wirecloud-docker-000000-clientsecret
+    volumes:
+      - wirecloud-data:/opt/wirecloud_instance/data
+      - wirecloud-static:/var/www/static
+
+  keyrock:
+    image: fiware/idm:7.7.0
+    container_name: fiware-keyrock
+    hostname: keyrock
+    networks:
+      default:
+        ipv4_address: 172.18.1.164
+    depends_on:
+      - mysql-db
+    ports:
+      - "3005:3005"
+      - "3443:3443"
+    environment:
+      - DEBUG=idm:*
+      - IDM_DB_HOST=mysql-db
+      - IDM_DB_PASS_FILE=/run/secrets/my_secret_data
+      - IDM_DB_USER=root
+      - IDM_HOST=http://localhost:3005
+      - IDM_PORT=3005
+      - IDM_ADMIN_USER=admin
+      - IDM_ADMIN_EMAIL=admin-fiware@examole.com
+      - IDM_ADMIN_PASS=admin
+    secrets:
+      - my_secret_data
+    healthcheck:
+      test: curl --fail -s http://localhost:3005/version || exit 1
+
+  # Context broker (v2)
+  orion-v2:
+    image: fiware/orion:2.2.0
+    hostname: orion-v2
+    container_name: fiware-orion-v2
+    depends_on:
+      - mongo-db-v2
+    networks:
+      - default
+    ports:
+      - "1026:1026"
+    command: -dbhost mongo-db-v2 -logLevel DEBUG -noCache
+    healthcheck:
+      test: curl --fail -s http://orion-v2:1026/version || exit 1
+
+  # Context broker (LD)
+  orion-ld:
+    image: fiware/orion-ld
+    hostname: orion-ld
+    container_name: fiware-orion-ld
+    depends_on:
+      - mongo-db-ld
+    networks:
+      - default
+    ports:
+      - "1027:1026"
+    command: -dbhost mongo-db-ld -logLevel DEBUG
+    healthcheck:
+      test: curl --fail -s http://orion-ld:1026/version || exit 1
+
+  # Databases
+  postgres-db:
+    image: postgres
+    hostname: postgres-db
+    container_name: db-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    networks:
+      default:
+        ipv4_address: 172.18.1.13
+    environment:
+      - POSTGRES_PASSWORD=wirepass   # Change this password!
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+  mysql-db:
+    restart: always
+    image: mysql:5.7
+    hostname: mysql-db
+    container_name: db-mysql
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    networks:
+      default:
+        ipv4_address: 172.18.1.6
+    environment:
+      - "MYSQL_ROOT_PASSWORD_FILE=/run/secrets/my_secret_data"
+      - "MYSQL_ROOT_HOST=172.18.1.164"
+    volumes:
+      - mysql-db:/var/lib/mysql
+      - ./mysql-data:/docker-entrypoint-initdb.d/:ro
+    secrets:
+      - my_secret_data
+
+  # Database (v2)
+  mongo-db-v2:
+    image: mongo:3.6
+    hostname: mongo-db-v2
+    container_name: db-mongo-v2
+    ports:
+      - "27017:27017"
+    networks:
+      default: ~
+    command: --bind_ip_all --smallfiles
+    volumes:
+      - mongo-db-v2:/data
+
+  # Database (LD)
+  mongo-db-ld:
+    image: mongo:3.6
+    hostname: mongo-db-ld
+    container_name: db-mongo-ld
+    expose:
+      - "27018"
+    ports:
+      - "27018:27017"
+    networks:
+      - default
+    command: --nojournal
+    volumes:
+      - mongo-db-ld:/data
+
+  ngsi-proxy:
+    image: fiware/ngsiproxy:1.2.0
+    hostname: ngsi-proxy
+    container_name: wc-ngsi-proxy
+    networks:
+      default:
+        ipv4_address: 172.18.1.14
+    expose:
+      - "8100"
+    ports:
+      - "8100:8100"
+    environment:
+      - PORT=8100
+      - TRUST_PROXY_HEADERS=0
+
+  # Kiel Parksensors Application Mashup Node.Js App
+  kiel-parksensors-application-mashup:
+    image: kiel-parksensors-application-mashup-node
+    hostname: kiel-parksensors-application-mashup
+    container_name: kiel-parksensors-application-mashup-node
+    build: ./app
+    networks:
+      - default
+    volumes:
+      - ./app:/home/nodejs/kiel-parksensors-application-mashup
+      - kiel-parksensors-application-mashup_node_modules:/home/nodejs/kiel-parksensors-application-mashup/node_modules
+
+  elasticsearch:
+    image: elasticsearch:2.4
+    container_name: wc-elasticsearch
+    hostname: elasticsearch
+    ports:
+      - "9200:9200"
+    networks:
+      default:
+        ipv4_address: 172.18.1.12
+
+    restart: always
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    command: elasticsearch -Des.index.max_result_window=50000
+
+  memcached:
+    image: memcached:1
+    container_name: wc-memcached
+    hostname: memcached
+    ports:
+      - "11211:11211"
+    networks:
+      default:
+        ipv4_address: 172.18.1.11
+
+    restart: always
+    command: memcached -m 2048m
+
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.18.1.0/24
+
+volumes:
+  mysql-db: ~
+  postgres-db: ~
+  elasticsearch-data: ~
+  wirecloud-static: ~
+  wirecloud-data: ~
+  mongo-db-v2: ~
+  mongo-db-ld: ~
+  kiel-parksensors-application-mashup_node_modules: ~
+
+secrets:
+  my_secret_data:
+    file: ./secrets.txt
