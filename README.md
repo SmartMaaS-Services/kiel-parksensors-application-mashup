@@ -24,12 +24,12 @@ Run `./services start` and wait wait for it to initialize completely, and visit 
 
 The next step is to create a user to log in to Wirecloud:
 
-`$ docker exec -ti some-wirecloud manage.py createsuperuser
- Username (leave blank to use 'root'): admin
- Email address: ${youremail}
- Password: ${yourpassword}
- Password (again): ${yourpassword}
- Superuser created successfully.`
+    - $ docker exec -ti some-wirecloud manage.py createsuperuser
+    - Username (leave blank to use 'root'): admin
+    - Email address: ${youremail}
+    - Password: ${yourpassword}
+    - Password (again): ${yourpassword}
+    - Superuser created successfully.`
 
 Now you can follow the documentation of https://github.com/FIWARE/tutorials.Application-Mashup#adding-resources-to-wirecloud
 1) Login with your user.
