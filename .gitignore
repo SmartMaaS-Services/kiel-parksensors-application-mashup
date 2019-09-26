@@ -1,0 +1,6 @@
+*.iml
+/app/.app.iml
+.dockerignore
+.idea/
+node_modules
+mysql-data
