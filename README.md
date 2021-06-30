@@ -1,4 +1,29 @@
-# kiel-parksensors-application-mashup
+<h2 align="center">
+  <a href="https://smart-maas.eu/en/"><img src="https://github.com/SmartMaaS-Services/Transaction-Context-Manager/blob/main/docs/images/Header.jpeg" alt="Smart MaaS" width="500"></a>
+  <br>
+      SMART MOBILITY SERVICE PLATFORM
+  <br>
+  <a href="https://smart-maas.eu/en/"><img src="https://github.com/SmartMaaS-Services/Transaction-Context-Manager/blob/main/docs/images/Logos-Smart-MaaS.png" alt="Smart MaaS" width="250"></a>
+  <br>
+</h2>
+
+<p align="center">
+  <a href="mailto:info@smart-maas.eu">Contact</a> •
+  <a href="https://github.com/SmartMaaS-Services/Transaction-Context-Manager/issues">Issues</a> •
+  <a href="https://smart-maas.eu/en/">Project Page</a>
+</p>
+
+
+***
+
+<h1 align="center">
+  <a>
+    kiel-parksensors-application-mashup
+  </a>
+</h1>
+
+***
+
 This project is an extension of the project "kiel-parksensors" and an introduction to [FIWARE Wirecloud](https://Wirecloud.rtfd.io). 
 It will be shown how the status of the parking spaces can be visualized on a map using Wirecloud mashups and widgets.
 
